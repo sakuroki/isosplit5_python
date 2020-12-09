@@ -64,13 +64,19 @@ class BuildExt(build_ext):
         'msvc': ['/EHsc'],
         'unix': [],
     }
+    l_opts = {
+        'msvc': [],
+        'unix': [],
+    }
 
     if sys.platform == 'darwin':
         c_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
+        l_opts['unix'] += ['-stdlib=libc++', '-mmacosx-version-min=10.7']
 
     def build_extensions(self):
         ct = self.compiler.compiler_type
         opts = self.c_opts.get(ct, [])
+        link_opts = self.l_opts.get(ct, [])
         if ct == 'unix':
             opts.append('-DVERSION_INFO="%s"' % self.distribution.get_version())
             opts.append(cpp_flag(self.compiler))   # AHB: C++11 not used now, but David Stein says needed.
@@ -80,6 +86,7 @@ class BuildExt(build_ext):
             opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
+            ext.extra_link_args = link_opts
         build_ext.build_extensions(self)
 
 #with open("README.md", "r") as fh:
@@ -93,13 +100,13 @@ setup(
     description="Efficient clustering algorithm for unknown number of unimodal clusters",
     #long_description=long_description,
     #long_description_content_type="text/markdown",
-    url="https://github.com/magland/isosplit5_python",
+    url="https://github.com/sakuroki/isosplit5_python",
     packages=find_packages(),
     license="Apache 2",
     ext_modules=ext_modules,
     cmdclass={'build_ext': BuildExt},
     install_requires=[
-        'numpy','pybind11>=2.2'
+        'numpy','sklearn','pybind11>=2.2'
     ],
     setup_requires=['pybind11>=2.2']
 )
